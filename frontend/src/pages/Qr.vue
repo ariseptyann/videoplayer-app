@@ -1,0 +1,499 @@
+<template>
+    <div class="qr-container">
+        <div class="content-wrapper">
+        <!-- Awan Background dengan wrapper -->
+        <div class="cloud-wrapper">
+            <img
+            src="@/assets/images/home/awan.png"
+            alt="Cloud"
+            class="cloud-image"
+            />
+        </div>
+
+        <!-- Logo HDV -->
+        <img
+            src="@/assets/images/home/logo.png"
+            alt="HDV Logo"
+            class="logo"
+        />
+
+        <!-- Scan Here -->
+        <img
+            src="@/assets/images/qr/scan-here.png"
+            alt="Scan Here"
+            class="scan-here"
+        />
+
+        <!-- Tempat QR -->
+        <!-- <img
+            src="@/assets/images/qr/tempat-qr.png"
+            alt="Tempat QR"
+            class="tempat-qr"
+        /> -->
+
+        <!-- QR Code Container -->
+        <div class="qr-code-wrapper">
+            <div v-if="loading" class="loading">
+                <p>Loading QR Code...</p>
+            </div>
+            <div v-else-if="error" class="error">
+                <p>{{ error }}</p>
+            </div>
+            <div v-else class="qr-code-container">
+                <canvas id="qr-canvas"></canvas>
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+                <!-- <p class="qr-subtitle">{{ qrData.title }}</p> -->
+            </div>
+        </div>
+
+        <!-- HOME Button (uncomment jika perlu) -->
+        <button
+            class="home-btn"
+            @click="$router.push('/')"
+        >
+            HOME
+        </button>
+
+        <!-- Background Illustration -->
+        <img
+            src="@/assets/images/home/illustrasi-full.png"
+            alt="Background"
+            class="background-illustration"
+        />
+        </div>
+    </div>
+</template>
+
+<script>
+import { ref, onMounted, onBeforeMount, onUnmounted, nextTick } from 'vue'
+import QRCode from 'qrcode'
+
+export default {
+    name: 'QRPage',
+    setup() {
+        const qrData = ref({
+            url: '',
+            title: ''
+        })
+        const loading = ref(true)
+        const error = ref(null)
+
+        const fetchQRData = async () => {
+            try {
+                const res = await fetch('/api/qr-data')
+                if (!res.ok) throw new Error('failed')
+                const data = await res.json()
+                qrData.value = data
+            } catch {
+                // fallback lokal
+                qrData.value = {
+                    url: 'https://ngobrolinhpv.com/',
+                    title: 'Scan untuk mengunjungi website'
+                }
+            }
+        }
+
+        onBeforeMount(async () => {
+            // mulai fetch sebelum mount
+            await fetchQRData()
+        })
+
+        // 2) Gambar QR setelah DOM siap (tanpa nunggu gambar lain)
+        const generateQRCode = async (url) => {
+            try {
+                const canvas = document.getElementById('qr-canvas')
+                if (!canvas) return
+                const vh = window.innerHeight
+                const size = Math.min(vh * 0.35, 350)
+                await QRCode.toCanvas(canvas, url, {
+                    width: size,
+                    margin: 2,
+                    color: { dark: '#0A0A0A', light: '#00000000' },
+                    errorCorrectionLevel: 'M'
+                })
+            } catch (e) {
+                error.value = 'Gagal membuat QR Code'
+                console.error(e)
+            }
+        }
+
+        // const generateQRCode = async (url) => {
+        //     try {
+        //         const canvas = document.getElementById('qr-canvas')
+        //         if (!canvas) return
+
+        //         const vh = window.innerHeight
+        //         const size = Math.min(vh * 0.35, 350)
+
+        //         await QRCode.toCanvas(canvas, url, {
+        //             width: size,
+        //             margin: 2,
+        //             color: {
+        //                 dark: '#0A0A0A',
+        //                 light: '#00000000'
+        //             },
+        //             errorCorrectionLevel: 'M'
+        //         })
+        //     } catch (err) {
+        //         console.error('Error generating QR code:', err)
+        //         error.value = 'Gagal membuat QR Code'
+        //     }
+        // }
+
+        // const fetchQRData = async () => {
+        //     try {
+        //         loading.value = true
+        //         error.value = null
+                
+        //         const response = await fetch('http://localhost:8000/api/qr-data')
+                
+        //         if (!response.ok) {
+        //             throw new Error('Failed to fetch QR data')
+        //         }
+                
+        //         const data = await response.json()
+        //         qrData.value = data
+                
+        //         // Generate QR code setelah data didapat
+        //         await generateQRCode(data.url)
+                
+        //     } catch (err) {
+        //         console.error('Error fetching QR data:', err)
+        //         error.value = 'Gagal memuat QR Code'
+        //         // Fallback ke URL default jika API error
+        //         qrData.value = {
+        //             url: 'https://ngobrolinhpv.com/',
+        //             title: 'Scan untuk mengunjungi website'
+        //         }
+        //         await generateQRCode(qrData.value.url)
+        //     } finally {
+        //         loading.value = false
+        //     }
+        // }
+
+        // const handleResize = () => {
+        //     if (qrData.value.url) {
+        //         generateQRCode(qrData.value.url)
+        //     }
+        // }
+
+        // onMounted(() => {
+        //     fetchQRData()
+        //     window.addEventListener('resize', handleResize)
+        // })
+
+        // onUnmounted(() => {
+        //     window.removeEventListener('resize', handleResize)
+        // })
+
+        onMounted(async () => {
+            await nextTick()                  // pastikan canvas sudah ada
+            await generateQRCode(qrData.value.url)
+            loading.value = false
+            window.addEventListener('resize', handleResize)
+        })
+
+        const handleResize = () => {
+        if (qrData.value.url) generateQRCode(qrData.value.url)
+        }
+
+        onUnmounted(() => window.removeEventListener('resize', handleResize))
+
+        return {
+            qrData,
+            loading,
+            error
+        }
+    }
+}
+</script>
+
+<style scoped>
+.qr-container {
+    background-color: #ebe2d1;
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.content-wrapper {
+    aspect-ratio: 9/16;
+    height: 100vh;
+    max-width: calc(100vh * 9/16);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.cloud-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    aspect-ratio: 392.63/395;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.cloud-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin-top: -39%;
+    display: block;
+}
+
+.logo {
+    width: auto;
+    height: 10%;
+    margin-top: 5%;
+    object-fit: contain;
+    z-index: 2;
+}
+
+.scan-here {
+    width: 60%;
+    height: auto;
+    margin-top: -20%;
+    object-fit: contain;
+    z-index: 2;
+}
+
+/* QR Code Styling */
+.qr-code-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: -23%;
+    z-index: 2;
+    min-height: 40vh;
+}
+
+.qr-code-container {
+    /* background: transparent;
+    padding: 2rem;
+    border-radius: 20px; 
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem; */
+    position: relative;          /* penting */
+    display: inline-block;       /* ukurannya mengikuti canvas */
+    background: transparent;
+    padding: 0;                  /* tanpa kotak putih */
+    box-shadow: none;
+    border: none;
+}
+
+#qr-canvas {
+    display: block;
+    border-radius: 10px;
+}
+
+/* ===== Corner style ===== */
+.qr-code-container {
+    position: relative;
+    display: inline-block;
+    background: transparent;
+    --corner-size: 60px;   /* panjang sisi sudut */
+    --thickness: 10px;     /* ketebalan garis */
+    --radius: 0;        /* lengkung sudut */
+    --color: #0a6a70;      /* warna teal */
+    --inset: 0px;          /* kalau mau masuk ke dalam, ubah mis. 8px */
+    --elbow-radius: 10px;
+}
+
+/* ===== Corner dengan balok, ujung RATA ===== */
+.corner {
+    position: absolute;
+    width: 0; height: 0;
+    z-index: 3;                /* di atas canvas */
+    pointer-events: none;
+}
+
+/* tiap corner punya 2 balok: ::before (horizontal) & ::after (vertikal) */
+.corner::before,
+.corner::after {
+    content: "";
+    position: absolute;
+    background: var(--color);
+}
+
+
+/* TOP-LEFT */
+.corner.tl { top: var(--inset); left: var(--inset); }
+.corner.tl::before { /* horizontal ke kanan */
+    top: 0; left: 0; height: var(--thickness); width: var(--corner-size);
+    border-top-left-radius: var(--elbow-radius);
+}
+.corner.tl::after {  /* vertikal ke bawah */
+    top: 0; left: 0; width: var(--thickness); height: var(--corner-size);
+    border-top-left-radius: var(--elbow-radius);
+}
+
+/* TOP-RIGHT */
+.corner.tr { top: var(--inset); right: var(--inset); }
+.corner.tr::before { /* horizontal ke kiri */
+    top: 0; right: 0; height: var(--thickness); width: var(--corner-size);
+    border-top-right-radius: var(--elbow-radius);
+}
+.corner.tr::after {  /* vertikal ke bawah */
+    top: 0; right: 0; width: var(--thickness); height: var(--corner-size);
+    border-top-right-radius: var(--elbow-radius);
+}
+
+/* BOTTOM-LEFT */
+.corner.bl { bottom: var(--inset); left: var(--inset); }
+.corner.bl::before { /* horizontal ke kanan */
+    bottom: 0; left: 0; height: var(--thickness); width: var(--corner-size);
+    border-bottom-left-radius: var(--elbow-radius);
+}
+.corner.bl::after {  /* vertikal ke atas */
+    bottom: 0; left: 0; width: var(--thickness); height: var(--corner-size);
+    border-bottom-left-radius: var(--elbow-radius);
+}
+
+/* BOTTOM-RIGHT */
+.corner.br { bottom: var(--inset); right: var(--inset); }
+.corner.br::before { /* horizontal ke kiri */
+    bottom: 0; right: 0; height: var(--thickness); width: var(--corner-size);
+    border-bottom-right-radius: var(--elbow-radius);
+}
+.corner.br::after {  /* vertikal ke atas */
+    bottom: 0; right: 0; width: var(--thickness); height: var(--corner-size);
+    border-bottom-right-radius: var(--elbow-radius);
+}
+
+
+
+/* .qr-subtitle {
+    color: #004B3F;
+    font-size: clamp(12px, 2vw, 18px);
+    font-weight: 600;
+    text-align: center;
+    margin: 0;
+    max-width: 300px;
+} */
+
+.loading,
+.error {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.loading p,
+.error p {
+    color: #004B3F;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.error p {
+    color: #d32f2f;
+}
+
+/* HOME Button */
+.home-btn {
+    background: #004B3F;
+    color: #dddc23;
+    border: none;
+    border-radius: 25px;
+    padding: 1rem 3.5rem;
+    font-size: clamp(16px, 2.5vw, 24px);
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15rem;
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.home-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.home-btn:active {
+    transform: scale(0.98);
+}
+
+.background-illustration {
+    position: absolute;
+    bottom: -35%;
+    left: 51%;
+    transform: translateX(-50%);
+    width: 167%;
+    z-index: 1;
+}
+
+/* Media Query untuk tampilan landscape (laptop) */
+@media (orientation: landscape) {
+    .content-wrapper {
+        height: 100vh;
+        max-width: calc(100vh * 9/16);
+        margin: 0 auto;
+    }
+}
+
+/* Media Query untuk tampilan portrait (mobile/tablet) */
+@media (orientation: portrait) {
+    .content-wrapper {
+        width: 100vw;
+        height: 100vh;
+    }
+}
+
+/* Untuk digital signage dengan resolusi tepat 1080x1920 */
+@media (width: 1080px) and (height: 1920px) {
+    .content-wrapper {
+        width: 1080px;
+        height: 1920px;
+    }
+
+    .cloud-wrapper {
+        width: 1080px;
+        height: 1920px; /* Sesuaikan nilai ini sesuai kebutuhan */
+    }
+
+    .cloud-image {
+        width: 1080px;
+        /* Sesuaikan nilai margin-top jika perlu untuk resolusi spesifik */
+        margin-top: -73%; /* Setengah dari tinggi asli gambar awan */
+    }
+
+    .qr-code-container {
+        padding: 2rem;
+    }
+
+    .home-btn {
+        margin-top: 30rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .home-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .home-btn:active {
+        transform: scale(0.98);
+    }
+}
+</style>
