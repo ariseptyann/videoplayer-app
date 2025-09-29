@@ -55,6 +55,10 @@ Backend akan melayani API di `http://127.0.0.1:8000`.
             "title": "Scan untuk mengunjungi website"
         }
 ```
+4. Tambahkan video di directori backend/static/videos/
+```bash
+    masukan video yg sudah anda download ke dalam folder videos
+```
 
 ### Frontend (Vite)
 1. Jalankan server pengembangan Vite dari dalam folder `frontend`:
