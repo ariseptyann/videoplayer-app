@@ -75,3 +75,6 @@ frontend/  # Aplikasi Vue 3 dengan Vite
 
 ## Catatan Tambahan
 - Untuk produksi, build frontend dengan `npm run build` dan layani hasilnya melalui server pilihan Anda.
+
+## auto return dari qr page ke home
+const AUTO_RETURN_DELAY_MS = 1 * 60 * 1000 // 1 menit || ubah bagian depan untuk menit  atau belakang untuk detik

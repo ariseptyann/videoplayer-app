@@ -43,11 +43,22 @@
 </template>
 
 <script>
+import { ensureAudioUnlocked, markAutoplayIntent } from '@/utils/audioUnlocker'
+
 export default {
     name: 'HomePage',
     methods: {
-        startVideo() {
-            this.$router.push('/video')
+        async startVideo() {
+            let unlocked = false
+
+            try {
+                unlocked = await ensureAudioUnlocked()
+            } catch (err) {
+                console.warn('Audio unlock failed', err)
+            } finally {
+                markAutoplayIntent({ hasAudioUnlocked: unlocked })
+                await this.$router.push('/video')
+            }
         }
     }
 }

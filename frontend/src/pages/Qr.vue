@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div class="qr-container">
         <div class="content-wrapper">
         <!-- Awan Background dengan wrapper -->
@@ -68,139 +68,120 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeMount, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import QRCode from 'qrcode'
+
+const AUTO_RETURN_DELAY_MS = 1 * 60 * 1000 // 1 menit || ubah bagian depan untuk menit  atau belakang untuk detik
+const QR_CANVAS_ID = 'qr-canvas'
+const FALLBACK_QR = {
+    url: 'https://ngobrolinhpv.com/',
+    title: 'Scan untuk mengunjungi website'
+}
 
 export default {
     name: 'QRPage',
     setup() {
-        const qrData = ref({
-            url: '',
-            title: ''
-        })
+        const router = useRouter()
+        const qrData = ref({ ...FALLBACK_QR })
         const loading = ref(true)
         const error = ref(null)
+        let autoReturnTimer = null
+
+        const clearAutoReturn = () => {
+            if (autoReturnTimer) {
+                clearTimeout(autoReturnTimer)
+                autoReturnTimer = null
+            }
+        }
+
+        const scheduleAutoReturn = () => {
+            clearAutoReturn()
+            autoReturnTimer = window.setTimeout(() => {
+                router.replace('/')
+            }, AUTO_RETURN_DELAY_MS)
+        }
+
+        const assignQrData = (payload) => {
+            if (!payload?.url || typeof payload.url !== 'string' || !payload.url.trim()) {
+                qrData.value = { ...FALLBACK_QR }
+                return
+            }
+
+            qrData.value = {
+                url: payload.url.trim(),
+                title: payload.title ?? FALLBACK_QR.title
+            }
+        }
 
         const fetchQRData = async () => {
             try {
-                const res = await fetch('/api/qr-data')
-                if (!res.ok) throw new Error('failed')
-                const data = await res.json()
-                qrData.value = data
-            } catch {
-                // fallback lokal
-                qrData.value = {
-                    url: 'https://ngobrolinhpv.com/',
-                    title: 'Scan untuk mengunjungi website'
+                const res = await fetch('/api/qr-data', { cache: 'no-store' })
+                if (!res.ok) {
+                    throw new Error(`Unexpected status ${res.status}`)
                 }
+
+                const data = await res.json()
+                assignQrData(data)
+            } catch (err) {
+                console.warn('QR data fetch failed; using fallback payload.', err)
+                assignQrData(null)
             }
         }
 
-        onBeforeMount(async () => {
-            // mulai fetch sebelum mount
-            await fetchQRData()
-        })
+        const renderQr = async () => {
+            const canvas = document.getElementById(QR_CANVAS_ID)
+            if (!canvas) {
+                return
+            }
 
-        // 2) Gambar QR setelah DOM siap (tanpa nunggu gambar lain)
-        const generateQRCode = async (url) => {
+            const url = qrData.value.url
+            if (!url) {
+                throw new Error('No QR URL available for rendering')
+            }
+
+            const vh = window.innerHeight
+            const size = Math.min(vh * 0.35, 350)
+
+            await QRCode.toCanvas(canvas, url, {
+                width: size,
+                margin: 2,
+                color: { dark: '#0A0A0A', light: '#00000000' },
+                errorCorrectionLevel: 'M'
+            })
+        }
+
+        const regenerateQr = async () => {
             try {
-                const canvas = document.getElementById('qr-canvas')
-                if (!canvas) return
-                const vh = window.innerHeight
-                const size = Math.min(vh * 0.35, 350)
-                await QRCode.toCanvas(canvas, url, {
-                    width: size,
-                    margin: 2,
-                    color: { dark: '#0A0A0A', light: '#00000000' },
-                    errorCorrectionLevel: 'M'
-                })
-            } catch (e) {
+                await renderQr()
+                error.value = null
+            } catch (err) {
+                console.error('Failed to generate QR code', err)
                 error.value = 'Gagal membuat QR Code'
-                console.error(e)
             }
         }
-
-        // const generateQRCode = async (url) => {
-        //     try {
-        //         const canvas = document.getElementById('qr-canvas')
-        //         if (!canvas) return
-
-        //         const vh = window.innerHeight
-        //         const size = Math.min(vh * 0.35, 350)
-
-        //         await QRCode.toCanvas(canvas, url, {
-        //             width: size,
-        //             margin: 2,
-        //             color: {
-        //                 dark: '#0A0A0A',
-        //                 light: '#00000000'
-        //             },
-        //             errorCorrectionLevel: 'M'
-        //         })
-        //     } catch (err) {
-        //         console.error('Error generating QR code:', err)
-        //         error.value = 'Gagal membuat QR Code'
-        //     }
-        // }
-
-        // const fetchQRData = async () => {
-        //     try {
-        //         loading.value = true
-        //         error.value = null
-                
-        //         const response = await fetch('http://localhost:8000/api/qr-data')
-                
-        //         if (!response.ok) {
-        //             throw new Error('Failed to fetch QR data')
-        //         }
-                
-        //         const data = await response.json()
-        //         qrData.value = data
-                
-        //         // Generate QR code setelah data didapat
-        //         await generateQRCode(data.url)
-                
-        //     } catch (err) {
-        //         console.error('Error fetching QR data:', err)
-        //         error.value = 'Gagal memuat QR Code'
-        //         // Fallback ke URL default jika API error
-        //         qrData.value = {
-        //             url: 'https://ngobrolinhpv.com/',
-        //             title: 'Scan untuk mengunjungi website'
-        //         }
-        //         await generateQRCode(qrData.value.url)
-        //     } finally {
-        //         loading.value = false
-        //     }
-        // }
-
-        // const handleResize = () => {
-        //     if (qrData.value.url) {
-        //         generateQRCode(qrData.value.url)
-        //     }
-        // }
-
-        // onMounted(() => {
-        //     fetchQRData()
-        //     window.addEventListener('resize', handleResize)
-        // })
-
-        // onUnmounted(() => {
-        //     window.removeEventListener('resize', handleResize)
-        // })
-
-        onMounted(async () => {
-            await nextTick()                  // pastikan canvas sudah ada
-            await generateQRCode(qrData.value.url)
-            loading.value = false
-            window.addEventListener('resize', handleResize)
-        })
 
         const handleResize = () => {
-        if (qrData.value.url) generateQRCode(qrData.value.url)
+            if (loading.value || error.value) {
+                return
+            }
+
+            regenerateQr()
         }
 
-        onUnmounted(() => window.removeEventListener('resize', handleResize))
+        onMounted(async () => {
+            await fetchQRData()
+            loading.value = false
+            await nextTick()
+            await regenerateQr()
+            window.addEventListener('resize', handleResize)
+            scheduleAutoReturn()
+        })
+
+        onUnmounted(() => {
+            window.removeEventListener('resize', handleResize)
+            clearAutoReturn()
+        })
 
         return {
             qrData,
