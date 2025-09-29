@@ -1,4 +1,4 @@
-# Signature App
+# Videoplayer App
 
 Aplikasi ini menggabungkan backend FastAPI dengan frontend Vue 3 untuk membuat videoplayer.
 
