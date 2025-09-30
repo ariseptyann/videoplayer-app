@@ -136,18 +136,30 @@ export default {
 }
 
 .get-started-btn {
-    background: #004B3F;
+    /* warna & gradasi */
+    /* fallback (jika gradient tidak didukung) */
+    background-color: #1d90a2;
+    /* gradient 180° = dari atas ke bawah */
+    background-image: linear-gradient(180deg, #1d90a2 0%, #015f6d 50%, #04444d 100%);
     color: #dddc23;
+
+    /* typografi */
+    font-family: "Raleway", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-weight: 900;              /* 800–900 mirip contoh Canva */
+    text-transform: uppercase;
+    letter-spacing: 1px;           /* opsional: biar mirip poster */
+    font-size: 55px;               /* atau responsif: clamp(28px, 5.2vw, 55px) */
+    line-height: 1;
+
+    /* layout tombol */
     border: none;
-    border-radius: 30px;
-    padding: 1.2rem 4rem;
-    font-size: 1.8vw;
-    font-weight: 900;
+    border-radius: 20px;
+    padding: 18px 28px;
     cursor: pointer;
     transition: transform 0.2s ease;
     margin-top: -100px;
     z-index: 2;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .get-started-btn:hover {
@@ -195,35 +207,35 @@ export default {
     }
 
     .cloud-wrapper {
-        width: 1080px;
-        height: 1920px; /* Sesuaikan nilai ini sesuai kebutuhan */
+        /* width: 1080px;
+        height: 1920px; */
+        width: 125%;
+        margin-left: -10%;
     }
 
     .cloud-image {
-        width: 1080px;
-        /* Sesuaikan nilai margin-top jika perlu untuk resolusi spesifik */
-        margin-top: -73%; /* Setengah dari tinggi asli gambar awan */
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
 
     .logo {
-        /* width: auto; */
-        height: 10%;
-        margin-top: 5%;
-        /* object-fit: contain;
-        z-index: 2; */
+        height: 15%;
+        margin-left: 3%;
     }
 
     .action-image {
-        width: 60%;
-        margin-top: -5%;
-        /* margin-top: -13%; */
-        /* margin-bottom: 5%; */
+        width: 80%;
+        margin-top: -13%;
     }
 
     .get-started-btn {
-        font-size: 36px;
-        padding: 1.5rem 5rem;
-        margin-top: -10%;
+        font-size: 64px;               /* atau responsif: clamp(28px, 5.2vw, 55px) */
+        line-height: 1;
+        padding: 32px 40px;
+        margin-top: -22%;
+        border-radius: 25px;
     }
 }
 </style>

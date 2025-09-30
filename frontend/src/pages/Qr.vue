@@ -141,10 +141,21 @@ export default {
             }
 
             const vh = window.innerHeight
-            const size = Math.min(vh * 0.35, 350)
+            const is1080x1920 = window.innerWidth === 560 && window.innerHeight === 560
+
+            // lebih besar di 1080×1920, tanpa cap 350
+            const target = is1080x1920 ? vh * 0.48 : Math.min(vh * 0.35, 350)
+            const size = Math.round(target)
+
+            // render tajam di layar high-DPI
+            const ratio = window.devicePixelRatio || 1
+            canvas.width  = size * ratio
+            canvas.height = size * ratio
+            canvas.style.width  = size + 'px'
+            canvas.style.height = size + 'px'
 
             await QRCode.toCanvas(canvas, url, {
-                width: size,
+                width: size * ratio,
                 margin: 2,
                 color: { dark: '#0A0A0A', light: '#00000000' },
                 errorCorrectionLevel: 'M'
@@ -390,18 +401,26 @@ export default {
 
 /* HOME Button */
 .home-btn {
-    background: #004B3F;
-    color: #dddc23;
+    /* gradient */
+    background-color: #f5f477;  /* fallback */
+    background-image: linear-gradient(180deg, #f5f477 0%, #dddc23 100%);
+
+    /* teks */
+    font-family: "Raleway", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-weight: 900;
+    font-size: 42px;
+    line-height: 1;              /* rapatkan vertikal */
+    color: #004B3F;              /* kontras bagus di atas gradient kuning */
+
+    /* tombol */
     border: none;
     border-radius: 25px;
-    padding: 1rem 3.5rem;
-    font-size: clamp(16px, 2.5vw, 24px);
-    font-weight: 900;
+    padding: 6px 32px;          /* lebih dekat ke tepi */
     cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 15rem;
+    transition: transform .2s ease, box-shadow .2s ease;
+    margin-top: 14rem;
     z-index: 2;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 18px rgba(0,0,0,.2);
 }
 
 .home-btn:hover {
@@ -447,34 +466,48 @@ export default {
     }
 
     .cloud-wrapper {
-        width: 1080px;
-        height: 1920px; /* Sesuaikan nilai ini sesuai kebutuhan */
+        /* width: 1080px;
+        height: 1920px;  */
+        width: 125%;
+        margin-left: -10%;
     }
 
     .cloud-image {
-        width: 1080px;
-        /* Sesuaikan nilai margin-top jika perlu untuk resolusi spesifik */
-        margin-top: -73%; /* Setengah dari tinggi asli gambar awan */
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .logo {
+        height: 15%;
+        margin-left: 5%;
+        margin-top: -1%;
+    }
+
+    .scan-here {
+        width: 80%;
+        margin-top: -32%;
+    }
+
+    .qr-code-wrapper {
+        margin-top: -27%;
+        min-height: auto;
     }
 
     .qr-code-container {
-        padding: 2rem;
+        --corner-size: 90px;
+        --thickness: 16px;
+        --inset: 20px;
+        --elbow-radius: 18px;
     }
 
     .home-btn {
-        margin-top: 30rem;
+        font-size: 48px;               /* atau responsif: clamp(28px, 5.2vw, 55px) */
+        line-height: 1;
+        padding: 20px 46px;
+        margin-top: 29rem;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .home-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
-
-    .home-btn:active {
-        transform: scale(0.98);
     }
 }
 </style>
