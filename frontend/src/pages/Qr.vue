@@ -72,7 +72,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import QRCode from 'qrcode'
 
-const AUTO_RETURN_DELAY_MS = 1 * 60 * 1000 // 1 menit || ubah bagian depan untuk menit  atau belakang untuk detik
+const AUTO_RETURN_DELAY_MS = 99 * 60 * 1000 // 1 menit || ubah bagian depan untuk menit  atau belakang untuk detik
 const QR_CANVAS_ID = 'qr-canvas'
 const FALLBACK_QR = {
     url: 'https://ngobrolinhpv.com/',
@@ -239,10 +239,10 @@ export default {
 }
 
 .cloud-image {
-    width: 100%;
+    width: 110%;
     height: 100%;
     object-fit: cover;
-    margin-top: -39%;
+    margin-top: -38%;
     display: block;
 }
 
@@ -415,10 +415,10 @@ export default {
     /* tombol */
     border: none;
     border-radius: 25px;
-    padding: 6px 32px;          /* lebih dekat ke tepi */
+    padding: 14px 42px;          /* lebih dekat ke tepi */
     cursor: pointer;
     transition: transform .2s ease, box-shadow .2s ease;
-    margin-top: 14rem;
+    margin-top: 22rem;
     z-index: 2;
     box-shadow: 0 6px 18px rgba(0,0,0,.2);
 }

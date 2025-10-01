@@ -100,11 +100,11 @@ export default {
 }
 
 .cloud-image {
-    width: 100%;
+    width: 110%;
     height: 100%;
     object-fit: cover;
     /* Geser ke atas setengah dari tinggi container */
-    margin-top: -39%;
+    margin-top: -38%;
     display: block;
 }
 
@@ -147,17 +147,17 @@ export default {
     font-family: "Raleway", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     font-weight: 900;              /* 800–900 mirip contoh Canva */
     text-transform: uppercase;
-    letter-spacing: 1px;           /* opsional: biar mirip poster */
+    letter-spacing: 2px;           /* opsional: biar mirip poster */
     font-size: 55px;               /* atau responsif: clamp(28px, 5.2vw, 55px) */
     line-height: 1;
 
     /* layout tombol */
     border: none;
     border-radius: 20px;
-    padding: 18px 28px;
+    padding: 30px 30px;
     cursor: pointer;
     transition: transform 0.2s ease;
-    margin-top: -100px;
+    margin-top: -200px;
     z-index: 2;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
@@ -195,7 +195,7 @@ export default {
     }
 
     .get-started-btn {
-        font-size: 3.5vw;
+        font-size: 5.5vw;
     }
 }
 

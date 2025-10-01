@@ -2,3 +2,8 @@ backend/static/videos/*.mp4
 venv/
 __pycache__/
 *.pyc
+# Python virtual environments
+venv/
+.venv/
+env/
+.env/
