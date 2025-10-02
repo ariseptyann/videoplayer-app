@@ -157,7 +157,7 @@ export default {
             await QRCode.toCanvas(canvas, url, {
                 width: size * ratio,
                 margin: 2,
-                color: { dark: '#0A0A0A', light: '#00000000' },
+                color: { dark: '#015f6d', light: '#00000000' },
                 errorCorrectionLevel: 'M'
             })
         }
